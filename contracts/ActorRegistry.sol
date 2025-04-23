@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28; // Use a recent compiler version
+pragma solidity ^0.8.20; // Use a recent compiler version
 
 import "hardhat/console.sol"; // Optional: For debugging during development
 
