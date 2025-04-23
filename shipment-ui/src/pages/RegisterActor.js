@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ethers } from "ethers";
-//import ActorRegistryABI from "../contracts/ActorRegistry.json";
-//import { ACTOR_REGISTRY_ADDRESS } from "../contracts/addresses";
+import ActorRegistryABI from "../contracts/ActorRegistry.json";
+import { ACTOR_REGISTRY_ADDRESS } from "../contracts/addresses";
 import { connectWallet, getProvider } from "../utils/connectWallet";
 
 export default function RegisterActor() {
@@ -14,10 +14,10 @@ export default function RegisterActor() {
       const account = await connectWallet();
       const provider = getProvider();
       const signer = await provider.getSigner();
-      //const registry = new ethers.Contract(ACTOR_REGISTRY_ADDRESS, ActorRegistryABI.abi, signer);
+      const registry = new ethers.Contract(ACTOR_REGISTRY_ADDRESS, ActorRegistryABI.abi, signer);
 
-      //const tx = await registry.registerActor(actorAddress, role);
-      //await tx.wait();
+      const tx = await registry.registerActor(actorAddress, role);
+      await tx.wait();
 
       setStatus("Actor registered successfully!");
     } catch (err) {
