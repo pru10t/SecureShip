@@ -6,8 +6,10 @@ import { connectWallet, getProvider } from "../utils/connectWallet";
 
 export default function RegisterActor() {
   const [actorAddress, setActorAddress] = useState("");
-  const [role, setRole] = useState("1"); // Default to Shipper
-  const [status, setStatus] = useState("");
+  const [role, setRole] = useState("1");
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
+  const [showErrorPopup, setShowErrorPopup] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(""); // ✅ New
 
   const handleRegister = async () => {
     try {
@@ -19,25 +21,72 @@ export default function RegisterActor() {
       const tx = await registry.registerActor(actorAddress, role);
       await tx.wait();
 
-      setStatus("Actor registered successfully!");
+      setShowSuccessPopup(true);
+      setTimeout(() => setShowSuccessPopup(false), 3000);
     } catch (err) {
       console.error(err);
-      setStatus("Error registering actor");
+      const reasonMatch = err?.reason || err?.error?.message || "Unknown error occurred";
+      setErrorMessage(reasonMatch);
+      setShowErrorPopup(true);
+      setTimeout(() => setShowErrorPopup(false), 4000);
     }
   };
 
-  
   return (
     <div
-    style={{
-      backgroundImage: `url('ship.webp')`, // 🔁 Replace with your image path
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-      minHeight: '100vh',
-      fontFamily: 'Arial, sans-serif',
-    }}
-  >
+      style={{
+        backgroundImage: `url('ship.webp')`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        minHeight: '100vh',
+        fontFamily: 'Arial, sans-serif',
+      }}
+    >
+      {/* ✅ Success popup */}
+      {showSuccessPopup && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            backgroundColor: "#28a745",
+            color: "white",
+            padding: "12px 20px",
+            borderRadius: "8px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+            fontSize: "16px",
+            zIndex: 9999,
+            transition: "opacity 0.5s ease-in-out"
+          }}
+        >
+          ✅ Actor registered successfully!
+        </div>
+      )}
+
+      {/* ❌ Error popup */}
+      {showErrorPopup && (
+        <div
+          style={{
+            position: "fixed",
+            top: "20px",
+            right: "20px",
+            backgroundColor: "#dc3545",
+            color: "white",
+            padding: "12px 20px",
+            borderRadius: "8px",
+            boxShadow: "0 2px 10px rgba(0,0,0,0.2)",
+            fontSize: "15px",
+            maxWidth: "300px",
+            zIndex: 9999,
+            transition: "opacity 0.5s ease-in-out",
+            whiteSpace: "pre-line"
+          }}
+        >
+          ❌ Error: {errorMessage}
+        </div>
+      )}
+
       {/* Top bar */}
       <div
         style={{
@@ -51,14 +100,14 @@ export default function RegisterActor() {
       >
         SecureShip
       </div>
-  
+
       {/* Centered card */}
       <div
         style={{
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          height: 'calc(100vh - 64px)', // adjust to account for top bar height
+          height: 'calc(100vh - 64px)',
         }}
       >
         <div
@@ -74,7 +123,7 @@ export default function RegisterActor() {
           }}
         >
           <h2 style={{ fontSize: '24px', marginBottom: '24px' }}>Register Actor</h2>
-  
+
           <input
             placeholder="Actor Address"
             value={actorAddress}
@@ -88,7 +137,7 @@ export default function RegisterActor() {
               border: '1px solid #ccc',
             }}
           />
-  
+
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
@@ -106,7 +155,7 @@ export default function RegisterActor() {
             <option value="3">Consignee</option>
             <option value="4">Terminal Operator</option>
           </select>
-  
+
           <button
             onClick={handleRegister}
             style={{
@@ -122,11 +171,8 @@ export default function RegisterActor() {
           >
             Register
           </button>
-  
-          <p style={{ marginTop: '16px', fontSize: '14px', color: '#333' }}>{status}</p>
         </div>
       </div>
     </div>
-  );  
-    
+  );
 }
