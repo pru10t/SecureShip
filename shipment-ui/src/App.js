@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import RegisterActor from "./pages/RegisterActor";
+import ShipmentDetailsPage from "./pages/ShipmentDetailsPage";
 // import other pages...
 
 function App() {
@@ -9,6 +10,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/admin" element={<RegisterActor/>} />
+        <Route path="/shipment/:id" element={<ShipmentDetailsPage />} />
         <Route path="/shipper" element={<div>Shipper Dashboard</div>} />
         <Route path="/carrier" element={<div>Carrier Dashboard</div>} />
         <Route path="/terminal" element={<div>Terminal Operator</div>} />
