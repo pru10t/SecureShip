@@ -152,7 +152,7 @@ contract ShipmentManager {
     ) public {
         ShipmentCore storage shipment = shipments[_shipmentId];
         if (shipment.shipper == address(0)) { revert NotFound(); }
-        if (msg.sender != shipment.shipper) { revert Unauthorized(); }
+        if (msg.sender != shipment.carrier) { revert Unauthorized(); }
         if (shipment.status != Status.Created) { revert InvalidStatus(); } // Only allow in Created status?
         if (shipment.bolAdded) { revert AlreadyExists(); }
 
