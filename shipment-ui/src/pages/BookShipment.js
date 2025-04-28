@@ -20,10 +20,55 @@ function BookShipment() {
   const [containerType, setContainerType] = useState('');
   const [weightKg, setWeightKg] = useState('');
 
+
+  // for viewing
+  const [viewShipmentId, setViewShipmentId] = useState("");
+  const [viewShipmentDetails, setViewShipmentDetails] = useState(null);
+  const [isViewLoading, setIsViewLoading] = useState(false);
+  const [viewErrorMessage, setViewErrorMessage] = useState("");
+  const [showViewErrorPopup, setShowViewErrorPopup] = useState(false);
+
+  // human-readable labels for enums
+  const STATUS_LABELS = ["Created", "PickedUp", "InTransit", "Delivered"];
+  const CONTAINER_LABELS = ["Dry", "Reefer"];
+
+
   useEffect(() => {
     if (shipmentId) fetchShipmentDetails();
   }, [shipmentId]);
 
+  const handleViewSubmit = async (e) => {
+    e.preventDefault();
+    setViewErrorMessage("");
+    setShowViewErrorPopup(false);
+    setIsViewLoading(true);
+  
+    try {
+      const provider = getProvider();
+      const contract = new ethers.Contract(
+        SHIPMENT_MANAGER_ADDRESS,
+        ShipmentManagerABI.abi,
+        provider
+      );
+      const details = await contract.getShipmentCoreDetails(viewShipmentId);
+  
+      setViewShipmentDetails({
+        id: details.shipmentId.toString(),
+        status: Number(details.status),
+        containerType: Number(details.containerType),
+        weightKg: details.weightKg.toString(),
+        detailsAdded: details.detailsAdded,
+        creationTimestamp: Number(details.creationTimestamp),  // ← fixed
+      });
+    } catch (err) {
+      const reason = err?.reason || err?.message || "Shipment not found";
+      setViewErrorMessage(reason);
+      setShowViewErrorPopup(true);
+    } finally {
+      setIsViewLoading(false);
+    }
+  };  
+  
   const fetchShipmentDetails = async () => {
     try {
       const provider = getProvider();
@@ -121,20 +166,29 @@ function BookShipment() {
 
   return (
     <div style={{
-      minHeight: "100vh", backgroundColor: "black", display: "flex",
-      flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px"
-    }}>
+      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "20px", 
+      
+      /* make it span the full view port */
+      minHeight: "100vh",
+      width: "100%",
+
+      backgroundImage: "url('/ship.webp')",
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+      backgroundColor: "#f5f5dc",
+      }}>
       {showSuccessPopup && (
         <div style={{ position: "fixed", top: 20, right: 20, backgroundColor: "#28a745", color: "white", padding: "12px 20px", borderRadius: "8px" }}>
-          ✅ {successMessage}
+           {successMessage}
         </div>
       )}
       {showErrorPopup && (
         <div style={{ position: "fixed", top: 20, right: 20, backgroundColor: "#dc3545", color: "white", padding: "12px 20px", borderRadius: "8px", maxWidth: "300px" }}>
-          ❌ Error: {errorMessage}
+           Error: {errorMessage}
         </div>
       )}
-      <div style={{ backgroundColor: "#f5f5dc", padding: "40px", borderRadius: "16px", width: "100%", maxWidth: "480px", boxShadow: "0 8px 16px rgba(0,0,0,0.25)", textAlign: "center" }}>
+      <div style={{ backgroundColor: "white", padding: "40px", borderRadius: "16px", width: "100%", maxWidth: "480px", boxShadow: "0 8px 16px rgba(0,0,0,0.25)", textAlign: "center" }}>
         <h2 style={{ fontSize: 26, color: "#333" }}>Book New Shipment</h2>
         <form onSubmit={handleBookingSubmit}>
           <input type="text" value={carrierAddress} onChange={(e) => setCarrierAddress(e.target.value)} placeholder="Carrier Address" style={{ width: "100%", marginBottom: "12px", padding: "10px", borderRadius: "8px" }} />
@@ -165,6 +219,110 @@ function BookShipment() {
               {isLoading ? "Submitting..." : "Submit Details"}
             </button>
           </form>
+        )}
+      </div>
+
+      {/* View Shipment Details popups */}
+      {showViewErrorPopup && (
+        <div
+          style={{
+            position: "fixed",
+            top: 20,
+            right: 20,
+            backgroundColor: "#f5f5dc",
+            color: "white",
+            padding: "12px 20px",
+            borderRadius: "8px",
+            maxWidth: "300px",
+          }}
+        >
+          Error: {viewErrorMessage}
+        </div>
+      )}
+
+      {/* View Shipment Details */}
+      <div
+        style={{
+          backgroundColor: "#fff",
+          padding: "40px",
+          borderRadius: "16px",
+          width: "100%",
+          maxWidth: "480px",
+          marginTop: "40px",
+          boxShadow: "0 8px 16px rgba(0,0,0,0.25)",
+          textAlign: "center",
+        }}
+      >
+        <h2 style={{ fontSize: 26, color: "#333" }}>
+          View Shipment Details
+        </h2>
+        <form onSubmit={handleViewSubmit}>
+          <input
+            type="number"
+            value={viewShipmentId}
+            onChange={(e) => setViewShipmentId(e.target.value)}
+            placeholder="Shipment ID"
+            required
+            style={{
+              width: "100%",
+              marginBottom: "12px",
+              padding: "10px",
+              borderRadius: "8px",
+            }}
+          />
+          <button
+            type="submit"
+            disabled={isViewLoading}
+            style={{
+              width: "100%",
+              padding: "12px",
+              backgroundColor: "#007bff",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+            }}
+          >
+            {isViewLoading ? "Loading..." : "View Details"}
+          </button>
+        </form>
+
+        {viewShipmentDetails && (
+          <div
+            style={{
+              marginTop: 30,
+              backgroundColor: "#f5f5dc",
+              padding: "20px",
+              borderRadius: "8px",
+              textAlign: "left",
+            }}
+          >
+            <p>
+              <strong>ID:</strong> {viewShipmentDetails.id}
+            </p>
+            <p>
+              <strong>Status:</strong>{" "}
+              {STATUS_LABELS[viewShipmentDetails.status]}
+            </p>
+            <p>
+              <strong>Container:</strong>{" "}
+              {CONTAINER_LABELS[viewShipmentDetails.containerType]}
+            </p>
+            <p>
+              <strong>Weight:</strong> {viewShipmentDetails.weightKg} kg
+            </p>
+            <p>
+              <strong>Details Added:</strong>{" "}
+              {viewShipmentDetails.detailsAdded ? "Yes" : "No"}
+            </p>
+            {/*
+            <p>
+              <strong>Created:</strong>{" "}
+              {new Date(
+                viewShipmentDetails.creationTimestamp * 1000
+              ).toLocaleString()}
+            </p>
+            */}
+          </div>
         )}
       </div>
     </div>
