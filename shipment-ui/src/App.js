@@ -6,6 +6,7 @@ import BookShipment from "./pages/BookShipment";
 import CarrierDashboard from "./pages/CarrierDashboard";
 import TerminalOperatorDashboard from "./pages/TerminalOperatorDashboard";
 import ConsigneeDashboard from "./pages/ConsigneeDashboard";
+import ViewBoL from "./pages/ViewBoL";
 
 function App() {
   return (
@@ -17,7 +18,7 @@ function App() {
         <Route path="/carrier" element={<CarrierDashboard />} />
         <Route path="/terminal" element={<TerminalOperatorDashboard/>} />
         <Route path="/consignee" element={<ConsigneeDashboard/>} />
-        <Route path="/view-bol" element={<div>View BoL Page</div>} />
+        <Route path="/view-bol" element={<ViewBoL/> }/>
       </Routes>
     </Router>
   );
