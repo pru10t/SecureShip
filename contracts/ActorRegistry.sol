@@ -11,8 +11,8 @@ contract ActorRegistry {
         Shipper,
         Carrier,
         Consignee,
-        TerminalOperator
-        // We can add Arbitrator later if needed
+        TerminalOperator,
+        Payee
     }
 
     // State variable to store the address of the contract owner/admin
